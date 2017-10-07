@@ -1,9 +1,4 @@
-package org.georgie.security;
-
-import java.util.Arrays;
-import java.util.Calendar;
-
-import javax.transaction.Transactional;
+package org.georgie.security.user;
 
 import org.georgie.persistence.dao.PasswordResetTokenRepository;
 import org.georgie.persistence.model.PasswordResetToken;
@@ -15,35 +10,46 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.util.Arrays;
+import java.util.Calendar;
+
 @Service
 @Transactional
-public class UserSecurityService implements ISecurityUserService {
-
+public class UserSecurityService implements ISecurityUserService
+{
     @Autowired
-    private PasswordResetTokenRepository passwordTokenRepository;
-
-    // API
+    public UserSecurityService(PasswordResetTokenRepository passwordResetTokenRepository)
+    {
+        this.passwordTokenRepository = passwordResetTokenRepository;
+    }
 
     @Override
-    public String validatePasswordResetToken(long id, String token) {
+    public String validatePasswordResetToken(long id, String token)
+    {
         final PasswordResetToken passToken = passwordTokenRepository.findByToken(token);
         if ((passToken == null) || (passToken.getUser()
-            .getId() != id)) {
+                .getId() != id))
+        {
             return "invalidToken";
         }
 
         final Calendar cal = Calendar.getInstance();
         if ((passToken.getExpiryDate()
-            .getTime() - cal.getTime()
-            .getTime()) <= 0) {
+                .getTime() - cal.getTime()
+                .getTime()) <= 0)
+        {
             return "expired";
         }
 
         final User user = passToken.getUser();
         final Authentication auth = new UsernamePasswordAuthenticationToken(user, null, Arrays.asList(new SimpleGrantedAuthority("CHANGE_PASSWORD_PRIVILEGE")));
         SecurityContextHolder.getContext()
-            .setAuthentication(auth);
+                .setAuthentication(auth);
         return null;
     }
+
+    // API
+    private final PasswordResetTokenRepository passwordTokenRepository;
 
 }

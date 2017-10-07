@@ -65,7 +65,7 @@ public class GetLoggedUsersIntegrationTest {
         String URL_PREFIX = "http://localhost:" + String.valueOf(port);
         LOGGED_USERS_URL = URL_PREFIX + "/loggedUsers";
         SESSION_REGISTRY_LOGGED_USERS_URL = URL_PREFIX + "/loggedUsersFromSessionRegistry";
-        formConfig = new FormAuthConfig(URL_PREFIX + "/auth/login", "username", "password");
+        formConfig = new FormAuthConfig(URL_PREFIX + "/login", "username", "password");
     }
 
     @Test

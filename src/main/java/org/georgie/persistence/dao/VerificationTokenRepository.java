@@ -9,7 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Date;
 import java.util.stream.Stream;
 
-public interface VerificationTokenRepository extends JpaRepository<VerificationToken, Long> {
+public interface VerificationTokenRepository extends JpaRepository<VerificationToken, Long>
+{
 
     VerificationToken findByToken(String token);
 

@@ -22,12 +22,6 @@ import java.util.Locale;
 @RestController
 public class RestLoginController
 {
-    private final ObjectMapper objectMapper;
-
-    private final LocaleResolver localeResolver;
-
-    private final MessageSource messages;
-
     @Autowired
     public RestLoginController(LocaleResolver localeResolver,
                                @Qualifier(value = "messageSource") MessageSource messages)
@@ -37,7 +31,7 @@ public class RestLoginController
         this.messages = messages;
     }
 
-    @RequestMapping(value = "/auth/loginSuccess", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/loginSuccess", method = RequestMethod.GET)
     public String loginSuccess(final Authentication authentication) throws JsonProcessingException
     {
         User user = (User) authentication.getPrincipal();
@@ -51,11 +45,11 @@ public class RestLoginController
         return objectMapper.writeValueAsString(response);
     }
 
-    @RequestMapping(value = "/auth/loginFailure", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/loginFailure", method = RequestMethod.GET)
     public String loginFailure(final HttpServletRequest httpRequest,
                                final HttpServletResponse httpResponse) throws JsonProcessingException
     {
-        String message = (String)httpRequest
+        String message = (String) httpRequest
                 .getSession()
                 .getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
         int code;
@@ -72,4 +66,7 @@ public class RestLoginController
         GenericError error = new GenericError(message, code);
         return objectMapper.writeValueAsString(error);
     }
+    private final ObjectMapper objectMapper;
+    private final LocaleResolver localeResolver;
+    private final MessageSource messages;
 }

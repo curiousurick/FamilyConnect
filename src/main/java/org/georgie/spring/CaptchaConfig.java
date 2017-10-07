@@ -9,19 +9,22 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-@ComponentScan(basePackages = { "org.georgie.captcha" })
-public class CaptchaConfig {
+@ComponentScan(basePackages = {"org.georgie.captcha"})
+public class CaptchaConfig
+{
     @Bean
-    public ClientHttpRequestFactory clientHttpRequestFactory() {
+    public RestOperations restTemplate()
+    {
+        RestTemplate restTemplate = new RestTemplate(this.clientHttpRequestFactory());
+        return restTemplate;
+    }
+
+    @Bean
+    public ClientHttpRequestFactory clientHttpRequestFactory()
+    {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(3 * 1000);
         factory.setReadTimeout(7 * 1000);
         return factory;
-    }
-
-    @Bean
-    public RestOperations restTemplate() {
-        RestTemplate restTemplate = new RestTemplate(this.clientHttpRequestFactory());
-        return restTemplate;
     }
 }

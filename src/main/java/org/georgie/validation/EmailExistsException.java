@@ -1,9 +1,11 @@
 package org.georgie.validation;
 
 @SuppressWarnings("serial")
-public class EmailExistsException extends Throwable {
+public class EmailExistsException extends Throwable
+{
 
-    public EmailExistsException(final String message) {
+    public EmailExistsException(final String message)
+    {
         super(message);
     }
 

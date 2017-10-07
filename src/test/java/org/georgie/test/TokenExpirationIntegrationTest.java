@@ -5,7 +5,6 @@ import org.georgie.persistence.dao.VerificationTokenRepository;
 import org.georgie.persistence.model.User;
 import org.georgie.persistence.model.VerificationToken;
 import org.georgie.spring.TestDbConfig;
-import org.georgie.spring.TestTaskConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +25,7 @@ import java.util.UUID;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { TestDbConfig.class, TestTaskConfig.class })
+@SpringBootTest(classes = { TestDbConfig.class })
 @Transactional
 public class TokenExpirationIntegrationTest {
 

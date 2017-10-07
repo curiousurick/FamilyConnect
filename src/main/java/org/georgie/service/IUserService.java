@@ -1,15 +1,16 @@
 package org.georgie.service;
 
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-
 import org.georgie.persistence.model.PasswordResetToken;
 import org.georgie.persistence.model.User;
 import org.georgie.persistence.model.VerificationToken;
 import org.georgie.web.dto.UserDto;
 import org.georgie.web.error.UserAlreadyExistException;
 
-public interface IUserService {
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
+public interface IUserService
+{
 
     User registerNewUserAccount(UserDto accountDto) throws UserAlreadyExistException;
 
@@ -42,8 +43,6 @@ public interface IUserService {
     String validateVerificationToken(String token);
 
     String generateQRUrl(User user) throws UnsupportedEncodingException;
-
-    User updateUser2FA(boolean use2FA);
 
     List<String> getUsersFromSessionRegistry();
 

@@ -9,43 +9,43 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 //@Component
-public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
-
-    @Autowired
-    private UserRepository userRepository;
+public class CustomAuthenticationProvider extends DaoAuthenticationProvider
+{
 
     @Override
-    public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        final String verificationCode = ((CustomWebAuthenticationDetails) auth.getDetails()).getVerificationCode();
+    public Authentication authenticate(Authentication auth) throws AuthenticationException
+    {
         final User user = userRepository.findByEmail(auth.getName());
-        if ((user == null)) {
-            throw new BadCredentialsException("Invalid username or password");
-        }
-        // to verify verification code
-        if (user.isUsing2FA()) {
-            final Totp totp = new Totp(user.getSecret());
-            if (!isValidLong(verificationCode) || !totp.verify(verificationCode)) {
-                throw new BadCredentialsException("Invalid verfication code");
-            }
-
+        if ((user == null))
+        {
+            throw new UsernameNotFoundException("User not found");
         }
         final Authentication result = super.authenticate(auth);
         return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
     }
 
-    private boolean isValidLong(String code) {
-        try {
+    private boolean isValidLong(String code)
+    {
+        try
+        {
             Long.parseLong(code);
-        } catch (final NumberFormatException e) {
+        }
+        catch (final NumberFormatException e)
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public boolean supports(Class<?> authentication) {
+    public boolean supports(Class<?> authentication)
+    {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
+
+    @Autowired
+    private UserRepository userRepository;
 }

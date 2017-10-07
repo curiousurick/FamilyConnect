@@ -1,8 +1,13 @@
 package org.georgie.spring;
 
+import org.georgie.security.facebook.FacebookConnectionSignup;
+import org.georgie.security.facebook.FacebookSignInAdapter;
 import org.georgie.security.google2fa.CustomAuthenticationProvider;
 import org.georgie.security.google2fa.CustomWebAuthenticationDetailsSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -20,87 +25,109 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.social.connect.ConnectionFactoryLocator;
+import org.springframework.social.connect.UsersConnectionRepository;
+import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository;
+import org.springframework.social.connect.web.ProviderSignInController;
 
 @Configuration
-@ComponentScan(basePackages = { "org.georgie.security" })
+@ComponentScan(basePackages = {"org.georgie.security"})
 // @ImportResource({ "classpath:webSecurityConfig.xml" })
 @EnableWebSecurity
-public class SecSecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecSecurityConfig extends WebSecurityConfigurerAdapter
+{
 
     @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private AuthenticationSuccessHandler myAuthenticationSuccessHandler;
-    
-    @Autowired
-    private LogoutSuccessHandler myLogoutSuccessHandler;
-
-    @Autowired
-    private AuthenticationFailureHandler authenticationFailureHandler;
-
-    @Autowired
-    private CustomWebAuthenticationDetailsSource authenticationDetailsSource;
-
-    public SecSecurityConfig() {
-        super();
+    public SecSecurityConfig(UserDetailsService userDetailsService,
+                             AuthenticationSuccessHandler myAuthenticationSuccessHandler,
+                             LogoutSuccessHandler myLogoutSuccessHandler,
+                             @Qualifier(value = "authenticationFailureHandler") AuthenticationFailureHandler authenticationFailureHandler,
+                             CustomWebAuthenticationDetailsSource authenticationDetailsSource,
+                             ConnectionFactoryLocator connectionFactoryLocator,
+                             UsersConnectionRepository usersConnectionRepository,
+                             FacebookConnectionSignup facebookConnectionSignup,
+                             FacebookSignInAdapter facebookSignInAdapter)
+    {
+        this.userDetailsService = userDetailsService;
+        this.myAuthenticationSuccessHandler = myAuthenticationSuccessHandler;
+        this.myLogoutSuccessHandler = myLogoutSuccessHandler;
+        this.authenticationFailureHandler = authenticationFailureHandler;
+        this.authenticationDetailsSource = authenticationDetailsSource;
+        this.connectionFactoryLocator = connectionFactoryLocator;
+        this.usersConnectionRepository = usersConnectionRepository;
+        this.facebookConnectionSignup = facebookConnectionSignup;
+        this.facebookSignInAdapter = facebookSignInAdapter;
     }
 
     @Override
-    protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
+    protected void configure(final AuthenticationManagerBuilder auth) throws Exception
+    {
         auth.authenticationProvider(authProvider());
     }
 
     @Override
-    public void configure(final WebSecurity web) throws Exception {
+    public void configure(final WebSecurity web) throws Exception
+    {
         web.ignoring()
             .antMatchers("/resources/**");
     }
 
     @Override
-    protected void configure(final HttpSecurity http) throws Exception {
+    protected void configure(final HttpSecurity http) throws Exception
+    {
         // @formatter:off
         http
-            .csrf().disable()
-            .authorizeRequests()
-                .antMatchers("/auth/login*","/auth/login*", "/auth/logout*",
-                        "/user/registration*", "/auth/registrationConfirm*", "/expiredAccount*", "/registration*",
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/user/loginFailure", "/login*", "/logout*",
+                        "/user/registration*", "/registrationConfirm*", "/expiredAccount*", "/registration*",
                         "/badUser*", "/user/resendRegistrationToken*" ,"/forgetPassword*", "/user/resetPassword*",
                         "/user/changePassword*", "/emailError*", "/resources/**","/old/user/registration*","/successRegister*","/qrcode*").permitAll()
-                .antMatchers("/invalidSession*").anonymous()
-                .antMatchers("/user/confirmed").hasAuthority("READ_PRIVILEGE")
-                .antMatchers("/user/updatePassword*","/user/savePassword*","/updatePassword*").hasAuthority("CHANGE_PASSWORD_PRIVILEGE")
+                .antMatchers("/user/loginSuccess").authenticated()
+                .antMatchers("/user/updatePassword*", "/user/savePassword*", "/updatePassword*").hasAuthority("CHANGE_PASSWORD_PRIVILEGE")
                 .anyRequest().hasAuthority("READ_PRIVILEGE")
                 .and()
-            .formLogin()
-                .loginPage("/auth/login")
+                .formLogin()
+                .loginPage("/login")
                 .defaultSuccessUrl("/homepage.html")
-                .failureUrl("/auth/login?error=true")
+                .failureUrl("/login?error=true")
                 .successHandler(myAuthenticationSuccessHandler)
                 .failureHandler(authenticationFailureHandler)
                 .authenticationDetailsSource(authenticationDetailsSource)
-            .permitAll()
+                .permitAll()
                 .and()
-            .sessionManagement()
-                .invalidSessionUrl("/invalidSession.html")
-                .maximumSessions(1).sessionRegistry(sessionRegistry()).and()
-                .sessionFixation().none()
-            .and()
-            .logout()
+                .sessionManagement()
+                .maximumSessions(1)
+                .sessionRegistry(sessionRegistry())
+                .and()
+                .sessionFixation().migrateSession()
+                .and()
+                .logout()
                 .logoutSuccessHandler(myLogoutSuccessHandler)
                 .invalidateHttpSession(false)
-                .logoutSuccessUrl("/logout.html?logSucc=true")
+                .logoutSuccessUrl("/user/logout.html?logSucc=true")
                 .deleteCookies("JSESSIONID")
                 .permitAll()
-            .and()
-            .httpBasic();
-    // @formatter:on
+                .and()
+                .httpBasic();
+        // @formatter:on
     }
 
-    // beans
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
 
     @Bean
-    public DaoAuthenticationProvider authProvider() {
+    public SessionRegistry sessionRegistry()
+    {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authProvider()
+    {
         final CustomAuthenticationProvider authProvider = new CustomAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(encoder());
@@ -108,13 +135,26 @@ public class SecSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public PasswordEncoder encoder() {
-        return new BCryptPasswordEncoder(11);
+    // @Primary
+    public ProviderSignInController providerSignInController() {
+        ((InMemoryUsersConnectionRepository) usersConnectionRepository).setConnectionSignUp(facebookConnectionSignup);
+        return new ProviderSignInController(connectionFactoryLocator, usersConnectionRepository, facebookSignInAdapter);
     }
 
     @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
+    public PasswordEncoder encoder()
+    {
+        return new BCryptPasswordEncoder(11);
     }
 
+    private final UserDetailsService userDetailsService;
+    private final AuthenticationSuccessHandler myAuthenticationSuccessHandler;
+    private final LogoutSuccessHandler myLogoutSuccessHandler;
+    private final AuthenticationFailureHandler authenticationFailureHandler;
+    private final CustomWebAuthenticationDetailsSource authenticationDetailsSource;
+
+    private final ConnectionFactoryLocator connectionFactoryLocator;
+    private final UsersConnectionRepository usersConnectionRepository;
+    private final FacebookConnectionSignup facebookConnectionSignup;
+    private final FacebookSignInAdapter facebookSignInAdapter;
 }

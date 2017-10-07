@@ -19,50 +19,6 @@ public class LoginResponse
     {
     }
 
-    public static class Builder
-    {
-        public Builder withId(Long id)
-        {
-            this.id = id;
-            return this;
-        }
-
-        public Builder withFirstName(String firstName)
-        {
-            this.firstName = firstName;
-            return this;
-        }
-
-        public Builder withLastName(String lastName)
-        {
-            this.lastName = lastName;
-            return this;
-        }
-
-        public Builder withEmail(String email)
-        {
-            this.email = email;
-            return this;
-        }
-
-        public Builder withEnabled(boolean enabled)
-        {
-            this.enabled = enabled;
-            return this;
-        }
-
-        public LoginResponse build()
-        {
-            return new LoginResponse(this);
-        }
-
-        private Long id;
-        private String firstName;
-        private String lastName;
-        private String email;
-        private boolean enabled;
-    }
-
     public static Builder builder()
     {
         return new Builder();
@@ -119,9 +75,9 @@ public class LoginResponse
     }
 
     @Override
-    public String toString()
+    public int hashCode()
     {
-        return ToStringBuilder.reflectionToString(this);
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 
     @Override
@@ -131,11 +87,54 @@ public class LoginResponse
     }
 
     @Override
-    public int hashCode()
+    public String toString()
     {
-        return HashCodeBuilder.reflectionHashCode(this);
+        return ToStringBuilder.reflectionToString(this);
     }
 
+    public static class Builder
+    {
+        public Builder withId(Long id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public Builder withFirstName(String firstName)
+        {
+            this.firstName = firstName;
+            return this;
+        }
+
+        public Builder withLastName(String lastName)
+        {
+            this.lastName = lastName;
+            return this;
+        }
+
+        public Builder withEmail(String email)
+        {
+            this.email = email;
+            return this;
+        }
+
+        public Builder withEnabled(boolean enabled)
+        {
+            this.enabled = enabled;
+            return this;
+        }
+
+        public LoginResponse build()
+        {
+            return new LoginResponse(this);
+        }
+
+        private Long id;
+        private String firstName;
+        private String lastName;
+        private String email;
+        private boolean enabled;
+    }
     private Long id;
     private String firstName;
     private String lastName;

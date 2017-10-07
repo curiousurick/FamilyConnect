@@ -19,40 +19,42 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @Controller
-public class RegistrationCaptchaController {
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
-
+public class RegistrationCaptchaController
+{
     @Autowired
-    private IUserService userService;
+    public RegistrationCaptchaController(IUserService userService,
+                                         ICaptchaService captchaService,
+                                         ApplicationEventPublisher applicationEventPublisher)
 
-    @Autowired
-    private ICaptchaService captchaService;
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
-
-    public RegistrationCaptchaController() {
-        super();
+    {
+        this.userService = userService;
+        this.captchaService = captchaService;
+        this.eventPublisher = applicationEventPublisher;
     }
-
-    // Registration
 
     @RequestMapping(value = "/user/registrationCaptcha", method = RequestMethod.POST)
     @ResponseBody
-    public GenericResponse captchaRegisterUserAccount(@Valid final UserDto accountDto, final HttpServletRequest request) {
+    public GenericResponse captchaRegisterUserAccount(@Valid final UserDto accountDto, final HttpServletRequest request)
+    {
 
         final String response = request.getParameter("g-recaptcha-response");
         captchaService.processResponse(response);
 
-        LOGGER.debug("Registering user account with information: {}", accountDto);
+        logger.debug("Registering user account with information: {}", accountDto);
 
         final User registered = userService.registerNewUserAccount(accountDto);
         eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered, request.getLocale(), getAppUrl(request)));
         return new GenericResponse("success");
     }
 
-    private String getAppUrl(HttpServletRequest request) {
+    private String getAppUrl(HttpServletRequest request)
+    {
         return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
     }
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final IUserService userService;
+    private final ICaptchaService captchaService;
+    private final ApplicationEventPublisher eventPublisher;
 
 }

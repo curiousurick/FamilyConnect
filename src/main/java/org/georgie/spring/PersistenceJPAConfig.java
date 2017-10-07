@@ -1,9 +1,5 @@
 package org.georgie.spring;
 
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,27 +14,34 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.sql.DataSource;
+import java.util.Properties;
+
 @Configuration
 @EnableTransactionManagement
-@PropertySource({ "classpath:persistence.properties" })
-@ComponentScan({ "org.georgie.persistence" })
+@PropertySource({"classpath:persistence.properties"})
+@ComponentScan({"org.georgie.persistence"})
 @EnableJpaRepositories(basePackages = "org.georgie.persistence.dao")
-public class PersistenceJPAConfig {
-
-    @Autowired
-    private Environment env;
-
-    public PersistenceJPAConfig() {
-        super();
+public class PersistenceJPAConfig
+{
+    public PersistenceJPAConfig()
+    {
     }
 
-    //
+    @Bean
+    public JpaTransactionManager transactionManager()
+    {
+        final JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
+        return transactionManager;
+    }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory()
+    {
         final LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource());
-        em.setPackagesToScan(new String[] { "org.georgie.persistence.model" });
+        em.setPackagesToScan("org.georgie.persistence.model");
         final HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
         em.setJpaProperties(additionalProperties());
@@ -46,7 +49,8 @@ public class PersistenceJPAConfig {
     }
 
     @Bean
-    public DataSource dataSource() {
+    public DataSource dataSource()
+    {
         final DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
         dataSource.setUrl(env.getProperty("jdbc.url"));
@@ -55,19 +59,8 @@ public class PersistenceJPAConfig {
         return dataSource;
     }
 
-    @Bean
-    public JpaTransactionManager transactionManager() {
-        final JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
-        return transactionManager;
-    }
-
-    @Bean
-    public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
-        return new PersistenceExceptionTranslationPostProcessor();
-    }
-
-    protected Properties additionalProperties() {
+    protected Properties additionalProperties()
+    {
         final Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
         hibernateProperties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
@@ -75,4 +68,12 @@ public class PersistenceJPAConfig {
         return hibernateProperties;
     }
 
+    @Bean
+    public PersistenceExceptionTranslationPostProcessor exceptionTranslation()
+    {
+        return new PersistenceExceptionTranslationPostProcessor();
+    }
+
+    @Autowired
+    private Environment env;
 }

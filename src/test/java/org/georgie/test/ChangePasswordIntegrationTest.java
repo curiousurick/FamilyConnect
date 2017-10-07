@@ -67,8 +67,8 @@ public class ChangePasswordIntegrationTest {
         RestAssured.port = port;
 
         final String URL_PREFIX = "http://localhost:" + String.valueOf(port);
-        URL = URL_PREFIX + "/user/updatePassword";
-        formConfig = new FormAuthConfig(URL_PREFIX + "/auth/login", "username", "password");
+        URL = URL_PREFIX + "/updatePassword";
+        formConfig = new FormAuthConfig(URL_PREFIX + "/login", "username", "password");
     }
 
     @Test

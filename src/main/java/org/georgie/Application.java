@@ -7,14 +7,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.context.request.RequestContextListener;
 
 @SpringBootApplication
-public class Application extends SpringBootServletInitializer {
+public class Application extends SpringBootServletInitializer
+{
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         SpringApplication.run(Application.class, args);
     }
 
     @Bean
-    public RequestContextListener requestContextListener() {
+    public RequestContextListener requestContextListener()
+    {
         return new RequestContextListener();
     }
 

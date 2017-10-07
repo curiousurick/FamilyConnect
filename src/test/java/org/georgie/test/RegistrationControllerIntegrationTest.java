@@ -71,6 +71,6 @@ public class RegistrationControllerIntegrationTest {
         ResultActions resultActions = this.mockMvc.perform(get("/registrationConfirm.html?token=" + token));
         resultActions.andExpect(status().is3xxRedirection());
         resultActions.andExpect(model().attribute("message", "Your account verified successfully"));
-        resultActions.andExpect(view().name("redirect:/auth/login?lang=en"));
+        resultActions.andExpect(view().name("redirect:/login?lang=en"));
     }
 }

@@ -2,27 +2,30 @@ package org.georgie.web.dto;
 
 import org.georgie.validation.ValidPassword;
 
-public class PasswordDto {
+public class PasswordDto
+{
 
-    private String oldPassword;
-
-    @ValidPassword
-    private String newPassword;
-
-    public String getOldPassword() {
+    public String getOldPassword()
+    {
         return oldPassword;
     }
 
-    public void setOldPassword(String oldPassword) {
+    public void setOldPassword(String oldPassword)
+    {
         this.oldPassword = oldPassword;
     }
 
-    public String getNewPassword() {
+    public String getNewPassword()
+    {
         return newPassword;
     }
 
-    public void setNewPassword(String newPassword) {
+    public void setNewPassword(String newPassword)
+    {
         this.newPassword = newPassword;
     }
+    private String oldPassword;
+    @ValidPassword
+    private String newPassword;
 
 }

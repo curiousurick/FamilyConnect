@@ -1,9 +1,5 @@
 package org.georgie.spring;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import org.georgie.persistence.dao.PrivilegeRepository;
 import org.georgie.persistence.dao.RoleRepository;
 import org.georgie.persistence.dao.UserRepository;
@@ -17,29 +13,31 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 @Component
-public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
-
-    private boolean alreadySetup = false;
-
+public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent>
+{
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PrivilegeRepository privilegeRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    // API
+    public SetupDataLoader(UserRepository userRepository,
+                           RoleRepository roleRepository,
+                           PrivilegeRepository privilegeRepository,
+                           PasswordEncoder passwordEncoder)
+    {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.privilegeRepository = privilegeRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     @Transactional
-    public void onApplicationEvent(final ContextRefreshedEvent event) {
-        if (alreadySetup) {
+    public void onApplicationEvent(final ContextRefreshedEvent event)
+    {
+        if (alreadySetup)
+        {
             return;
         }
 
@@ -68,9 +66,11 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     }
 
     @Transactional
-    private final Privilege createPrivilegeIfNotFound(final String name) {
+    private final Privilege createPrivilegeIfNotFound(final String name)
+    {
         Privilege privilege = privilegeRepository.findByName(name);
-        if (privilege == null) {
+        if (privilege == null)
+        {
             privilege = new Privilege(name);
             privilegeRepository.save(privilege);
         }
@@ -78,14 +78,22 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     }
 
     @Transactional
-    private final Role createRoleIfNotFound(final String name, final Collection<Privilege> privileges) {
+    private final Role createRoleIfNotFound(final String name, final Collection<Privilege> privileges)
+    {
         Role role = roleRepository.findByName(name);
-        if (role == null) {
+        if (role == null)
+        {
             role = new Role(name);
             role.setPrivileges(privileges);
             roleRepository.save(role);
         }
         return role;
     }
+    private boolean alreadySetup = false;
+
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PrivilegeRepository privilegeRepository;
+    private final PasswordEncoder passwordEncoder;
 
 }
